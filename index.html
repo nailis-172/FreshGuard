@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreshGuard - Monitoring Penyimpanan</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f1f1f7;
+      color: #26352a;
+      padding: 20px;
+    }
+
+    header {
+      background: #247447;
+      color: white;
+      padding: 25px;
+      border-radius: 15px;
+      margin-bottom: 22px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 14px;
+    }
+
+    .info {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px #0000000d;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 3px 10px #00000010;
+    }
+
+    .card h2 {
+      color: #247447;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    .data {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eeeeee;
+      gap: 10px;
+    }
+
+    .data strong {
+      font-size: 17px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .normal {
+      background: #d8f5df;
+      color: #167333;
+    }
+
+    .warning {
+      background: #ffe1dc;
+      color: #c0392b;
+    }
+
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      margin-top: 20px;
+      box-shadow: 0 3px 10px #00000010;
+    }
+
+    .section h2 {
+      color: #247447;
+      margin-bottom: 15px;
+    }
+
+    .notification {
+      padding: 12px;
+      background: #f1f7f1;
+      border-left: 5px solid #247447;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+
+    .notification.warning-note {
+      background: #fff0ed;
+      border-left-color: #d9534f;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 550px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eeeeee;
+      text-align: center;
+    }
+
+    th {
+      background: #247447;
+      color: white;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 25px;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .connection {
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+      }
+
+      header h1 {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🌿 FreshGuard</h1>
+    <p>Sistem Monitoring Kondisi Penyimpanan Sayuran dan Buah</p>
+  </header>
+
+  <div class="info">
+    <p><strong>Waktu:</strong> <span id="waktu">-</span></p>
+    <p style="margin-top:8px;">
+      <strong>Status Firebase:</strong>
+      <span class="connection" id="firebaseStatus">Menghubungkan...</span>
+    </p>
+    <p style="margin-top:8px;">
+      <strong>Metode:</strong> Simulasi data dan algoritma rule-based
+    </p>
+  </div>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>🥬 Penyimpanan Sayuran</h2>
+
+      <div class="data">
+        <span>Suhu</span>
+        <strong id="suhu1">- °C</strong>
+      </div>
+
+      <div class="data">
+        <span>Kelembapan</span>
+        <strong id="lembap1">- %</strong>
+      </div>
+
+      <div class="data">
+        <span>Kondisi</span>
+        <strong id="kondisi1">-</strong>
+      </div>
+
+      <span id="status1" class="status normal">MENUNGGU</span>
+    </div>
+
+    <div class="card">
+      <h2>🍎 Penyimpanan Buah</h2>
+
+      <div class="data">
+        <span>Suhu</span>
+        <strong id="suhu2">- °C</strong>
+      </div>
+
+      <div class="data">
+        <span>Kelembapan</span>
+        <strong id="lembap2">- %</strong>
+      </div>
+
+      <div class="data">
+        <span>Kondisi</span>
+        <strong id="kondisi2">-</strong>
+      </div>
+
+      <span id="status2" class="status normal">MENUNGGU</span>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <h2>📊 Rata-rata Kondisi Penyimpanan</h2>
+
+    <div class="container">
+      <div class="card">
+        <h2>🥬 Sayuran</h2>
+        <p>Rata-rata suhu: <strong id="rataSuhu1">-</strong></p>
+        <p style="margin-top:10px;">
+          Rata-rata kelembapan: <strong id="rataLembap1">-</strong>
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>🍎 Buah</h2>
+        <p>Rata-rata suhu: <strong id="rataSuhu2">-</strong></p>
+        <p style="margin-top:10px;">
+          Rata-rata kelembapan: <strong id="rataLembap2">-</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔔 Notifikasi</h2>
+    <div id="notifikasi">
+      <div class="notification">Menunggu data pemantauan...</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📋 Riwayat Pemantauan</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Waktu</th>
+            <th>Zona</th>
+            <th>Suhu</th>
+            <th>Kelembapan</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody id="riwayat">
+          <tr>
+            <td colspan="5">Belum ada data</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    FreshGuard © 2026 | Prototype Monitoring Penyimpanan
+  </div>
+
+  <script type="module">
+
+    // =====================================
+    // 1. KONFIGURASI FIREBASE
+    // =====================================
+
+    import { initializeApp } from
+      "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+
+    import {
+      getDatabase,
+      ref,
+      push,
+      onValue
+    } from
+      "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCb6V2RQ5uoqwBacszw-rR4s8oDCDrPspE",
+      authDomain: "freshguard-iot.firebaseapp.com",
+      databaseURL: "https://freshguard-iot-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "freshguard-iot",
+      storageBucket: "freshguard-iot.firebasestorage.app",
+      messagingSenderId: "480663167996",
+      appId: "1:480663167996:web:a86f384903e5be3fdfc879"
+    };
+
+    let db = null;
+    let firebaseAktif = false;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+      firebaseAktif = true;
+
+      document.getElementById("firebaseStatus").textContent =
+        "Terhubung - mencoba mengirim data";
+
+      document.getElementById("firebaseStatus").style.color =
+        "green";
+
+    } catch (error) {
+      console.error("Firebase gagal diinisialisasi:", error);
+
+      document.getElementById("firebaseStatus").textContent =
+        "Gagal terhubung";
+
+      document.getElementById("firebaseStatus").style.color =
+        "red";
+    }
+
+
+    // =====================================
+    // 2. PENYIMPANAN RIWAYAT
+    // =====================================
+
+    let riwayatData = [];
+
+    let dataZona1 = [];
+    let dataZona2 = [];
+
+    const batasSuhu = 35;
+    const batasKelembapan = 80;
+
+
+    // =====================================
+    // 3. ALGORITMA RULE-BASED
+    // =====================================
+
+    function tentukanStatus(suhu, kelembapan) {
+
+      if (
+        suhu >= batasSuhu ||
+        kelembapan >= batasKelembapan
+      ) {
+        return "PERINGATAN";
+      }
+
+      return "NORMAL";
+    }
+
+
+    // =====================================
+    // 4. MEMBUAT DATA SIMULASI
+    // =====================================
+
+    function dataSimulasi() {
+
+      const suhuSayur = Number(
+        (25 + Math.random() * 13).toFixed(1)
+      );
+
+      const lembapSayur = Math.floor(
+        55 + Math.random() * 40
+      );
+
+      const suhuBuah = Number(
+        (22 + Math.random() * 15).toFixed(1)
+      );
+
+      const lembapBuah = Math.floor(
+        50 + Math.random() * 45
+      );
+
+      return [
+        {
+          zona: "Sayuran",
+          suhu: suhuSayur,
+          kelembapan: lembapSayur
+        },
+        {
+          zona: "Buah",
+          suhu: suhuBuah,
+          kelembapan: lembapBuah
+        }
+      ];
+    }
+
+
+    // =====================================
+    // 5. MENAMPILKAN DATA PADA DASHBOARD
+    // =====================================
+
+    function tampilkanData(data, nomor) {
+
+      const suhu = data.suhu;
+      const kelembapan = data.kelembapan;
+
+      const status = tentukanStatus(
+        suhu,
+        kelembapan
+      );
+
+      document.getElementById("suhu" + nomor)
+        .textContent = suhu + " °C";
+
+      document.getElementById("lembap" + nomor)
+        .textContent = kelembapan + " %";
+
+      document.getElementById("kondisi" + nomor)
+        .textContent = status;
+
+      const elemenStatus = document.getElementById(
+        "status" + nomor
+      );
+
+      elemenStatus.textContent = status;
+
+      if (status === "PERINGATAN") {
+
+        elemenStatus.className = "status warning";
+
+      } else {
+
+        elemenStatus.className = "status normal";
+
+      }
+
+      return status;
+    }
+
+
+    // =====================================
+    // 6. MENGHITUNG RATA-RATA
+    // =====================================
+
+    function hitungRataRata(data) {
+
+      if (data.length === 0) {
+        return {
+          suhu: 0,
+          kelembapan: 0
+        };
+      }
+
+      const totalSuhu = data.reduce(
+        (jumlah, item) => jumlah + item.suhu,
+        0
+      );
+
+      const totalLembap = data.reduce(
+        (jumlah, item) => jumlah + item.kelembapan,
+        0
+      );
+
+      return {
+        suhu: totalSuhu / data.length,
+        kelembapan: totalLembap / data.length
+      };
+    }
+
+
+    function tampilkanRataRata() {
+
+      const rata1 = hitungRataRata(dataZona1);
+      const rata2 = hitungRataRata(dataZona2);
+
+      document.getElementById("rataSuhu1")
+        .textContent = rata1.suhu.toFixed(1) + " °C";
+
+      document.getElementById("rataLembap1")
+        .textContent = rata1.kelembapan.toFixed(1) + " %";
+
+      document.getElementById("rataSuhu2")
+        .textContent = rata2.suhu.toFixed(1) + " °C";
+
+      document.getElementById("rataLembap2")
+        .textContent = rata2.kelembapan.toFixed(1) + " %";
+    }
+
+
+    // =====================================
+    // 7. NOTIFIKASI
+    // =====================================
+
+    function tampilkanNotifikasi(data1, status1, data2, status2) {
+
+      const tempat = document.getElementById("notifikasi");
+
+      tempat.innerHTML = "";
+
+      const daftar = [
+        { data: data1, status: status1 },
+        { data: data2, status: status2 }
+      ];
+
+      daftar.forEach(item => {
+
+        const elemen = document.createElement("div");
+
+        elemen.className = "notification";
+
+        if (item.status === "PERINGATAN") {
+
+          elemen.classList.add("warning-note");
+
+          elemen.textContent =
+            "⚠️ Peringatan pada penyimpanan " +
+            item.data.zona +
+            ": suhu atau kelembapan melewati batas.";
+
+        } else {
+
+          elemen.textContent =
+            "✅ Penyimpanan " +
+            item.data.zona +
+            " dalam kondisi normal.";
+
+        }
+
+        tempat.appendChild(elemen);
+
+      });
+    }
+
+
+    // =====================================
+    // 8. MENAMPILKAN RIWAYAT
+    // =====================================
+
+    function tampilkanRiwayat() {
+
+      const tabel = document.getElementById("riwayat");
+
+      tabel.innerHTML = "";
+
+      const dataTerbaru = riwayatData.slice(-20).reverse();
+
+      dataTerbaru.forEach(item => {
+
+        const baris = document.createElement("tr");
+
+        baris.innerHTML = `
+          <td>${item.waktu}</td>
+          <td>${item.zona}</td>
+          <td>${item.suhu} °C</td>
+          <td>${item.kelembapan} %</td>
+          <td>${item.status}</td>
+        `;
+
+        tabel.appendChild(baris);
+
+      });
+
+      if (dataTerbaru.length === 0) {
+
+        tabel.innerHTML =
+          '<tr><td colspan="5">Belum ada data</td></tr>';
+
+      }
+    }
+
+
+    // =====================================
+    // 9. MENGIRIM DATA KE FIREBASE
+    // =====================================
+
+    async function kirimFirebase(data) {
+
+      if (!firebaseAktif || !db) {
+        return;
+      }
+
+      try {
+
+        await push(ref(db, "monitoring"), data);
+
+        document.getElementById("firebaseStatus")
+          .textContent = "Terhubung - data berhasil dikirim";
+
+        document.getElementById("firebaseStatus")
+          .style.color = "green";
+
+      } catch (error) {
+
+        console.error("Gagal mengirim data Firebase:", error);
+
+        document.getElementById("firebaseStatus")
+          .textContent = "Gagal mengirim data - periksa Rules";
+
+        document.getElementById("firebaseStatus")
+          .style.color = "red";
+
+      }
+    }
+
+
+    // =====================================
+    // 10. MEMBACA DATA FIREBASE
+    // =====================================
+
+    if (firebaseAktif && db) {
+
+      onValue(
+        ref(db, "monitoring"),
+        snapshot => {
+
+          if (snapshot.exists()) {
+
+            console.log(
+              "Data monitoring di Firebase:",
+              snapshot.val()
+            );
+
+          } else {
+
+            console.log("Belum ada data monitoring di Firebase.");
+
+          }
+
+        },
+        error => {
+
+          console.error("Gagal membaca Firebase:", error);
+
+        }
+      );
+
+    }
+
+
+    // =====================================
+    // 11. PROSES MONITORING UTAMA
+    // =====================================
+
+    async function jalankanMonitoring() {
+
+      const sekarang = new Date();
+
+      const waktu = sekarang.toLocaleString("id-ID");
+
+      document.getElementById("waktu").textContent = waktu;
+
+      const hasil = dataSimulasi();
+
+      const dataSayur = hasil[0];
+      const dataBuah = hasil[1];
+
+      const statusSayur = tampilkanData(dataSayur, 1);
+      const statusBuah = tampilkanData(dataBuah, 2);
+
+      dataSayur.status = statusSayur;
+      dataBuah.status = statusBuah;
+
+      dataZona1.push(dataSayur);
+      dataZona2.push(dataBuah);
+
+      // Simpan maksimal 20 data untuk perhitungan rata-rata
+      if (dataZona1.length > 20) {
+        dataZona1.shift();
+      }
+
+      if (dataZona2.length > 20) {
+        dataZona2.shift();
+      }
+
+      tampilkanRataRata();
+
+      tampilkanNotifikasi(
+        dataSayur,
+        statusSayur,
+        dataBuah,
+        statusBuah
+      );
+
+      const catatanSayur = {
+        ...dataSayur,
+        waktu: waktu
+      };
+
+      const catatanBuah = {
+        ...dataBuah,
+        waktu: waktu
+      };
+
+      riwayatData.push(catatanSayur);
+      riwayatData.push(catatanBuah);
+
+      if (riwayatData.length > 100) {
+        riwayatData.shift();
+        riwayatData.shift();
+      }
+
+      tampilkanRiwayat();
+
+      // Kirim kedua zona ke Firebase
+      await kirimFirebase(catatanSayur);
+      await kirimFirebase(catatanBuah);
+
+      console.log("Monitoring diperbarui:", hasil);
+    }
+
+
+    // =====================================
+    // 12. MENJALANKAN PROGRAM
+    // =====================================
+
+    jalankanMonitoring();
+
+    setInterval(jalankanMonitoring, 5000);
+
+  </script>
+
+</body>
+</html>
